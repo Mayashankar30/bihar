@@ -674,7 +674,7 @@ export default function App() {
 
               <p>Follow on</p>
               <a
-                href="https://www.instagram.com/your_username"
+                href="https://www.instagram.com//wander_bihar26/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
