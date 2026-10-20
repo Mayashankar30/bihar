@@ -2,9 +2,11 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   ArrowUpRight,
+  Headset,
+  Instagram,
   MapPin,
   MessageCircle,
-  Search,
+  Phone,
 } from "lucide-react";
 import { gsap, useGSAP } from "./lib/gsap.js";
 import Navbar from "./components/Navbar.jsx";
@@ -12,31 +14,43 @@ import TourCard from "./components/TourCard.jsx";
 import TourDialog from "./components/TourDialog.jsx";
 import { useTours } from "./hooks/useTours.js";
 import { usePlaces } from "./hooks/usePlaces.js";
-import { Instagram } from "lucide-react";
+import { businessWhatsAppNumber } from "./lib/config.js";
+import { sampleTours } from "./data/sampleTours.js";
 
 const categories = ["All trips", "Heritage", "Spiritual", "Nature"];
+const heroImages = [
+  {
+    src: sampleTours[0].images[0],
+    alt: "Great Buddha statue at Bodh Gaya, Bihar",
+    label: "Sacred Bodh Gaya",
+    className: "hero-image-tall",
+  },
+  {
+    src: sampleTours[3].images[0],
+    alt: "Wild tiger in its natural habitat",
+    label: "Wild Bihar",
+    className: "hero-image-short",
+  },
+];
 
 export default function App() {
   const heroRef = useRef(null);
-  const ambientVideoRef = useRef(null);
   const showcaseRef = useRef(null);
   const trackRef = useRef(null);
   const tripsRef = useRef(null);
   const routeRef = useRef(null);
   const routeProgressRef = useRef(null);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [placeSearch, setPlaceSearch] = useState("");
   const [category, setCategory] = useState("All trips");
   const [selectedTour, setSelectedTour] = useState(null);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(
-    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-  );
   const filters = useMemo(
     () => ({
-      q: search || undefined,
+      q: debouncedSearch || undefined,
       category: category === "All trips" ? undefined : category,
     }),
-    [search, category],
+    [debouncedSearch, category],
   );
   const { data: tours = [], isFetching } = useTours(filters);
   const trimmedSearch = search.trim();
@@ -61,69 +75,50 @@ export default function App() {
       const media = gsap.matchMedia();
       media.add("(prefers-reduced-motion: no-preference)", () => {
         const intro = gsap.timeline();
-        intro.from(".hero-copy .eyebrow", {
+        intro.from(".adventure-eyebrow", {
           autoAlpha: 0,
           y: 16,
           duration: 0.6,
           ease: "power3.out",
         });
         intro.from(
-          ".hero-line-inner",
+          ".adventure-script",
           {
             autoAlpha: 0,
-            y: 40,
-            duration: 1,
-            stagger: 0.08,
+            y: 24,
+            duration: 0.7,
             ease: "power4.out",
           },
           "-=0.2",
         );
         intro.from(
-          ".hero-description",
-          { autoAlpha: 0, y: 22, duration: 0.7, ease: "power3.out" },
+          ".adventure-title",
+          { autoAlpha: 0, y: 32, duration: 0.85, ease: "power3.out" },
           "-=0.45",
+        );
+        intro.from(
+          ".adventure-description",
+          { autoAlpha: 0, y: 18, duration: 0.65, ease: "power3.out" },
+          "-=0.45",
+        );
+        intro.from(
+          ".adventure-actions",
+          { autoAlpha: 0, y: 18, duration: 0.65, ease: "power3.out" },
+          "-=0.3",
         );
         intro.from(
           ".hero-search-bar",
           { autoAlpha: 0, y: 30, duration: 0.8, ease: "power3.out" },
           "-=0.25",
         );
-        intro.from(
-          ".photo-stamp",
-          { autoAlpha: 0, scale: 0.75, duration: 0.6, ease: "back.out(1.8)" },
-          0.65,
-        );
-        intro.from(
-          ".hero-caption",
-          { autoAlpha: 0, y: 8, duration: 0.45, ease: "power2.out" },
-          0.7,
-        );
 
-        const ambientVideo = ambientVideoRef.current;
-        const kenBurns = gsap.fromTo(
-          ambientVideo,
-          { scale: 1.08 },
-          { scale: 1, duration: 36, ease: "none", repeat: -1, yoyo: true },
-        );
-        const backgroundParallax = gsap.to(ambientVideo, {
-          yPercent: 8,
-          ease: "none",
-          scrollTrigger: {
-            trigger: heroRef.current,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 1.2,
-          },
-        });
-        const stampParallax = gsap.to(".photo-stamp", {
-          y: -24,
-          ease: "none",
-          scrollTrigger: {
-            trigger: heroRef.current,
-            start: "top top",
-            end: "bottom top",
-            scrub: 1.5,
-          },
+        gsap.from(".hero-photo-frame", {
+          autoAlpha: 0,
+          y: 38,
+          duration: 0.9,
+          stagger: 0.16,
+          ease: "power3.out",
+          delay: 0.2,
         });
         const searchButton = heroRef.current.querySelector(
           ".hero-search-submit",
@@ -166,7 +161,7 @@ export default function App() {
             overwrite: true,
           });
           gsap.fromTo(
-            browseButton,
+            searchButton,
             { scale: 0.97 },
             {
               scale: 1,
@@ -184,9 +179,6 @@ export default function App() {
           searchButton.removeEventListener("pointermove", onPointerMove);
           searchButton.removeEventListener("pointerleave", onPointerLeave);
           searchButton.removeEventListener("pointerdown", onPointerDown);
-          kenBurns.kill();
-          backgroundParallax.kill();
-          stampParallax.kill();
           intro.kill();
         };
       });
@@ -202,47 +194,6 @@ export default function App() {
       const showcase = showcaseRef.current;
       const track = trackRef.current;
       const media = gsap.matchMedia();
-
-      media.add(
-        "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
-        () => {
-          const getDistance = () =>
-            Math.max(0, track.scrollWidth - showcase.clientWidth);
-          if (getDistance() < 1) return undefined;
-
-          const horizontal = gsap.to(track, {
-            x: () => -getDistance(),
-            ease: "none",
-            scrollTrigger: {
-              trigger: showcase,
-              start: "top top",
-              end: () => `+=${getDistance()}`,
-              pin: true,
-              scrub: 1.2,
-              anticipatePin: 1,
-              invalidateOnRefresh: true,
-            },
-          });
-          gsap.utils.toArray(".tour-image", track).forEach((image) => {
-            gsap.fromTo(
-              image,
-              { xPercent: 7 },
-              {
-                xPercent: -7,
-                ease: "none",
-                scrollTrigger: {
-                  trigger: image.closest(".tour-card"),
-                  containerAnimation: horizontal,
-                  start: "left right",
-                  end: "right left",
-                  scrub: 1,
-                },
-              },
-            );
-          });
-          return () => horizontal.scrollTrigger?.kill();
-        },
-      );
 
       media.add(
         "(max-width: 767px) and (prefers-reduced-motion: no-preference)",
@@ -348,27 +299,14 @@ export default function App() {
   );
 
   useEffect(() => {
-    const timeout = setTimeout(() => setPlaceSearch(trimmedSearch), 1000);
+    const timeout = setTimeout(() => setDebouncedSearch(trimmedSearch), 300);
     return () => clearTimeout(timeout);
   }, [trimmedSearch]);
 
   useEffect(() => {
-    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updatePreference = (event) => setPrefersReducedMotion(event.matches);
-    setPrefersReducedMotion(preference.matches);
-    preference.addEventListener("change", updatePreference);
-    return () => preference.removeEventListener("change", updatePreference);
-  }, []);
-
-  useEffect(() => {
-    const video = ambientVideoRef.current;
-    if (!video) return;
-    if (prefersReducedMotion) {
-      video.pause();
-      return;
-    }
-    video.play().catch(() => {});
-  }, [prefersReducedMotion]);
+    const timeout = setTimeout(() => setPlaceSearch(trimmedSearch), 1000);
+    return () => clearTimeout(timeout);
+  }, [trimmedSearch]);
 
   function goToTrips() {
     tripsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -377,55 +315,40 @@ export default function App() {
   return (
     <div
       id="top"
-      className="relative isolate min-h-screen overflow-hidden bg-transparent text-ink"
+      className="relative isolate min-h-screen overflow-hidden bg-mist text-ink"
     >
-      <div className="site-video-layer" aria-hidden="true">
-        <video
-          ref={ambientVideoRef}
-          className="ambient-travel-video"
-          autoPlay={!prefersReducedMotion}
-          muted
-          loop
-          playsInline
-          preload={prefersReducedMotion ? "none" : "metadata"}
-          poster="https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1e/Great_Buddha_statue_at_Bodh_Gaya%2C_Bihar%2C_India.jpg/1280px-Great_Buddha_statue_at_Bodh_Gaya%2C_Bihar%2C_India.jpg"
-          tabIndex={-1}
-        >
-          <source
-            media="(max-width: 767px)"
-            src="https://videos.pexels.com/video-files/36470077/15464664_360_640_30fps.mp4"
-            type="video/mp4"
-          />
-          <source
-            src="https://videos.pexels.com/video-files/3045163/3045163-hd_1920_1080_25fps.mp4"
-            type="video/mp4"
-          />
-        </video>
-        <div className="site-video-wash" />
-      </div>
       <Navbar onExplore={goToTrips} />
       <main>
-        <section ref={heroRef} className="cinematic-hero">
-          <div className="hero-background" aria-hidden="true">
-            <div className="hero-shade" />
-          </div>
-          <div className="cinematic-hero-inner">
-            <div className="hero-copy">
-              <p className="eyebrow">
-                <span className="eyebrow-dot" /> Bihar, India
-              </p>
-              <h1 aria-label="Explore Bihar.">
-                <span className="hero-line" aria-hidden="true">
-                  <span className="hero-line-inner">Explore</span>
-                </span>
-                <span className="hero-line" aria-hidden="true">
-                  <em className="hero-line-inner">Bihar.</em>
-                </span>
+        <section ref={heroRef} className="adventure-hero">
+          <div className="adventure-hero-inner">
+            <div className="adventure-copy">
+              <p className="adventure-eyebrow">Come &amp; discover</p>
+              <p className="adventure-script">The heart of Bihar</p>
+              <h1 className="adventure-title">
+                Adventure begins
+                <br />
+                <span>in Bihar.</span>
               </h1>
-              <p className="hero-description">
-                Ancient places, peaceful monasteries and wild forests. Find a
-                trip and discover Bihar at your own pace.
+              <p className="adventure-description">
+                From sacred Bodh Gaya to wild forest trails, find your own
+                adventure through Bihar’s living history and beautiful places.
               </p>
+              <div className="adventure-actions">
+                <button
+                  className="adventure-action-primary"
+                  onClick={goToTrips}
+                >
+                  Explore our trips <ArrowRight size={17} />
+                </button>
+                <a
+                  className="adventure-action-secondary"
+                  href={`https://wa.me/${businessWhatsAppNumber}?text=${encodeURIComponent("Hi, I'd like to plan a custom trip in Bihar.")}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Plan a custom trip
+                </a>
+              </div>
               <form
                 className="hero-search-bar"
                 onSubmit={(event) => {
@@ -452,18 +375,25 @@ export default function App() {
                 </button>
               </form>
             </div>
+            <div className="adventure-gallery" aria-label="Bihar travel highlights">
+              {heroImages.map((image) => (
+                <figure
+                  className={`hero-photo-frame ${image.className}`}
+                  key={image.label}
+                >
+                  <img src={image.src} alt={image.alt} loading="eager" />
+                  <figcaption>{image.label}</figcaption>
+                </figure>
+              ))}
+              <span className="gallery-note" aria-hidden="true">
+                <span>38°</span>
+                <span>Places to find yourself</span>
+              </span>
+            </div>
           </div>
-          <div className="photo-stamp">
-            <span>
-              Discover
-              <br />
-              Bihar
-            </span>
-          </div>
-          <div className="hero-caption">
-            <span>BIHAR, INDIA</span>
-            <span>Bodh Gaya</span>
-          </div>
+          <a className="hero-scroll-cue" href="#trips">
+            Scroll to explore <span aria-hidden="true">↓</span>
+          </a>
         </section>
 
         <section
@@ -505,7 +435,13 @@ export default function App() {
               </div>
             )}
             {!!tours.length && (
-              <div className="tour-showcase" ref={showcaseRef}>
+              <div
+                className="tour-showcase"
+                ref={showcaseRef}
+                role="region"
+                aria-label="Tour packages; scroll horizontally to browse"
+                tabIndex={0}
+              >
                 <div className="tour-track" ref={trackRef}>
                   {tours.map((tour) => (
                     <TourCard
@@ -615,7 +551,7 @@ export default function App() {
           </div>
         </section>
         {!!itinerary.length && (
-          <section ref={routeRef} className="route-section">
+        <section id="route" ref={routeRef} className="route-section">
             <div className="route-heading">
               <p className="eyebrow text-coral">The route</p>
               <h2 className="section-title">
@@ -652,25 +588,49 @@ export default function App() {
           </section>
         )}
       </main>
-      <footer id="footer" className="site-footer">
-        <div className="footer-inner">
-          <div className="footer-main">
+      <section
+        id="contact"
+        className="contact-section"
+        style={{ "--contact-image": `url("${sampleTours[0].images[0]}")` }}
+        aria-labelledby="contact-title"
+      >
+        <div className="contact-banner">
+          <p>Feel free to</p>
+          <h2 id="contact-title">Contact us</h2>
+        </div>
+        <div className="contact-content">
+          <article className="contact-card">
+            <div className="contact-card-title">
+              <span className="contact-icon"><MapPin size={25} /></span>
+              <h3>Find us</h3>
+            </div>
+            <h4>Journeys across Bihar</h4>
+            <p>
+              We plan local trips throughout Bihar. Starting points and meeting
+              locations are shared with each available tour.
+            </p>
+            <a href="#trips" className="contact-text-link">Explore destinations</a>
+          </article>
+          <article className="contact-card">
+            <div className="contact-card-title">
+              <span className="contact-icon"><Headset size={25} /></span>
+              <h3>Give us a call</h3>
+            </div>
+            <h4>Trip enquiries</h4>
+            <p>Talk to our team about package details, travel dates, and availability.</p>
+            <a className="contact-text-link" href={`tel:+${businessWhatsAppNumber}`}>
+              +{businessWhatsAppNumber}
+            </a>
+            <h4 className="contact-subheading">Custom &amp; group trips</h4> 
             <a
-              className="footer-enquiry"
-              href="https://wa.me/917004719341?text=Hi%2C%20I%27d%20like%20to%20enquire%20about%20a%20Bihar%20trip."
+              className="contact-text-link"
+              href={`https://wa.me/${businessWhatsAppNumber}?text=${encodeURIComponent("Hi, I would like to plan a custom or group trip in Bihar.")}`}
               target="_blank"
               rel="noreferrer"
-              aria-label="Enquire about a Bihar trip on WhatsApp"
             >
-              <span className="footer-enquiry-icon">
-                <MessageCircle size={19} />
-              </span>
-              <span className="footer-enquiry-copy">
-                <strong>Know more about Bihar</strong>
-                <small>Enquire with us on WhatsApp</small>
-              </span>
-              <ArrowUpRight size={18} className="footer-enquiry-arrow" />
+              Message us on WhatsApp
             </a>
+<<<<<<< HEAD
 
               <p>Follow on</p>
               <a
@@ -681,27 +641,147 @@ export default function App() {
                 className="text-gray-700 hover:text-black transition-colors"
               >
                 <Instagram size={22} />
+=======
+          </article>
+          <article className="contact-card">
+            <div className="contact-card-title">
+              <span className="contact-icon"><MessageCircle size={25} /></span>
+              <h3>Write to us</h3>
+            </div>
+            <h4>Support &amp; trip planning</h4>
+            <p>
+              Need a detailed quote or have a question? Send us your destination
+              and travel plans and our team will get back to you.
+            </p>
+            <a
+              className="contact-text-link"
+              href={`https://wa.me/${businessWhatsAppNumber}?text=${encodeURIComponent("Hello WanderBihar, I have a question about a trip.")}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Start a WhatsApp conversation
+            </a>
+            <p className="contact-note">We’re happy to help with custom itineraries and group enquiries.</p>
+          </article>
+        </div>
+      </section>
+      <footer
+        id="footer"
+        className="site-footer adventure-footer"
+        style={{ "--footer-image": `url("${sampleTours[0].images[0]}")` }}
+      >
+        <div className="footer-inner">
+          <div className="footer-main">
+            <div className="footer-column footer-brand-column">
+              <a href="#top" className="footer-brand-link" aria-label="WanderBihar home">
+                <span className="footer-brand-mark"><MapPin size={22} /></span>
+                <span>Wander<span>Bihar</span></span>
+>>>>>>> 55c8d1e (Add Navbar component)
               </a>
+              <p className="footer-about">
+                Thoughtful journeys through Bihar’s sacred landmarks, living
+                heritage, and wild landscapes—planned with local insight.
+              </p>
+              <a
+                className="footer-whatsapp-link"
+                href={`https://wa.me/${businessWhatsAppNumber}?text=${encodeURIComponent("Hi, I'd like to enquire about a Bihar trip.")}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <MessageCircle size={17} /> Chat with our trip team
+              </a>
+              <div className="footer-socials" aria-label="Connect with WanderBihar">
+                <a href="#top" aria-label="Back to top"><ArrowUpRight size={17} /></a>
+                <a
+                  href={`https://wa.me/${businessWhatsAppNumber}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="WhatsApp"
+                >
+                  <MessageCircle size={17} />
+                </a>
+                <a
+                  href="https://www.instagram.com/"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Instagram"
+                >
+                  <Instagram size={17} />
+                </a>
+              </div>
+            </div>
 
-            <div className="footer-identity">
-              <p className="footer-brand">wander Bihar</p>
-              <p className="footer-copyright">
-                © {new Date().getFullYear()} wander Bihar. All rights reserved.
-              </p>
-              <p className="footer-contact">
-                Thoughtful journeys across Bihar, planned with local insight.
-              </p>
+            <div className="footer-column">
+              <h2 className="footer-heading"><ArrowUpRight size={17} /> Important links</h2>
+              <ul className="footer-link-list">
+                <li><a href="#top"><ArrowRight size={17} /> Home</a></li>
+                <li><a href="#trips"><ArrowRight size={17} /> Explore trips</a></li>
+                <li><a href="#route"><ArrowRight size={17} /> Buddhist circuit</a></li>
+                <li><a href="#trips"><ArrowRight size={17} /> Trip categories</a></li>
+                <li><a href="#contact"><ArrowRight size={17} /> Contact us</a></li>
+              </ul>
+            </div>
+
+            <div className="footer-column">
+              <h2 className="footer-heading"><ArrowUpRight size={17} /> Bihar highlights</h2>
+              <ul className="footer-link-list">
+                {["Bodh Gaya", "Rajgir", "Nalanda", "Patna", "Vaishali", "Valmiki Tiger Reserve"].map(destination => (
+                  <li key={destination}>
+                    <a
+                      href="#trips"
+                      onClick={() => {
+                        setSearch(destination);
+                        setCategory("All trips");
+                      }}
+                    >
+                      <ArrowRight size={17} /> {destination}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="footer-column footer-contact-column">
+              <h2 className="footer-heading"><ArrowUpRight size={17} /> Reach us</h2>
+              <div className="footer-contact-card">
+                <MapPin size={19} />
+                <p>Local journeys, across Bihar, India.</p>
+              </div>
+              <a className="footer-contact-card" href={`tel:+${businessWhatsAppNumber}`}>
+                <Phone size={19} />
+                <p>+{businessWhatsAppNumber}<span>Call our trip team</span></p>
+              </a>
+              <a
+                className="footer-contact-card"
+                href={`https://wa.me/${businessWhatsAppNumber}?text=${encodeURIComponent("Hi, I have a question about travelling in Bihar.")}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <MessageCircle size={19} />
+                <p>WhatsApp support<span>Ask us about your journey</span></p>
+              </a>
+              <div className="footer-payment-note">
+                <span>Secure checkout powered by</span>
+                <strong>Razorpay</strong>
+                <span>Payment options shown at checkout</span>
+              </div>
             </div>
           </div>
-          {/* <div className="footer-credits">
-          <span className="footer-credits-label">Photo credits</span>
-          <a href="https://commons.wikimedia.org/wiki/File:Great_Buddha_statue_at_Bodh_Gaya,_Bihar,_India.jpg" target="_blank" rel="noreferrer">K. Venkataramana (CC0)</a>
-          <a href="https://commons.wikimedia.org/wiki/File:Another_view_of_the_Stupa_of_ancient_Nalanda_Mahavihara.jpg" target="_blank" rel="noreferrer">Debazoti1985 (CC BY-SA 4.0)</a>
-          <a href="https://commons.wikimedia.org/wiki/File:Shanti_Stupa_%40_Vaishali_-_panoramio.jpg" target="_blank" rel="noreferrer">Neil Satyam (CC BY-SA 3.0)</a>
-          <a href="https://commons.wikimedia.org/wiki/File:Panthera_tigris_tigris.jpg" target="_blank" rel="noreferrer">U.S. Fish &amp; Wildlife Service (Public Domain)</a>
-        </div> */}
+          <div className="footer-bottom">
+            <span>© {new Date().getFullYear()} WanderBihar. All rights reserved.</span>
+            <span>Made for meaningful journeys across Bihar.</span>
+          </div>
         </div>
       </footer>
+      <a
+        className="floating-whatsapp"
+        href={`https://wa.me/${businessWhatsAppNumber}?text=${encodeURIComponent("Hi, I have a question about travelling in Bihar.")}`}
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Chat with WanderBihar on WhatsApp"
+      >
+        <MessageCircle size={25} />
+      </a>
       <TourDialog tour={selectedTour} onClose={() => setSelectedTour(null)} />
     </div>
   );

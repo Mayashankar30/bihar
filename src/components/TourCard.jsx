@@ -83,7 +83,9 @@ export default function TourCard({ tour, onSelect }) {
             alt={tour.title}
             loading="lazy"
           />
-          <span className="category-tag">{tour.category}</span>
+          <span className="category-tag">
+            {tour.isSample ? "Illustrative preview" : tour.category}
+          </span>
           <span className="image-arrow">
             <ArrowUpRight size={18} />
           </span>
@@ -94,13 +96,15 @@ export default function TourCard({ tour, onSelect }) {
               <MapPin size={14} className="shrink-0 text-coral" />
               {tour.destination}
             </span>
-            <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-ink">
-              <Star size={14} fill="currentColor" className="text-coral" />
-              {Number(tour.averageRating || 0).toFixed(2)}{" "}
-              <span className="font-normal text-ink/45">
-                ({tour.reviewCount || 0})
+            {!tour.isSample && (
+              <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-ink">
+                <Star size={14} fill="currentColor" className="text-coral" />
+                {Number(tour.averageRating || 0).toFixed(2)}{" "}
+                <span className="font-normal text-ink/45">
+                  ({tour.reviewCount || 0})
+                </span>
               </span>
-            </span>
+            )}
           </div>
           <h3 className="font-display text-[21px] leading-snug text-ink group-hover:text-leaf">
             {tour.title}
@@ -114,8 +118,10 @@ export default function TourCard({ tour, onSelect }) {
               {tour.durationDays} {tour.durationDays === 1 ? "day" : "days"}
             </span>
             <span className="text-sm font-semibold text-ink">
-              ₹{formatter.format(tour.price)}{" "}
-              <span className="font-normal text-ink/50">/ person</span>
+              {tour.isSample ? "Illustrative" : `₹${formatter.format(tour.price)}`}
+              {!tour.isSample && (
+                <span className="font-normal text-ink/50"> / person</span>
+              )}
             </span>
           </div>
         </div>

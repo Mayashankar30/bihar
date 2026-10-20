@@ -33,4 +33,4 @@ export const sampleTours = [
     ],
     coordinates: { latitude: 27.3084, longitude: 84.0782 }, departures: [{ _id: 'valmiki-jan', startDate: '2027-01-18', endDate: '2027-01-19', seatsAvailable: 12 }]
   }
-];
+].map(tour => ({ ...tour, isSample: true }));

@@ -7,6 +7,7 @@ export default {
         ink: '#18332f',
         leaf: '#28675a',
         coral: '#e8785f',
+        saffron: '#e99a43',
         mist: '#f7f7f2'
       },
       fontFamily: {
