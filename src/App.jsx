@@ -699,11 +699,7 @@ export default function App() {
                   <MessageCircle size={17} />
                 </a>
                 <a
-<<<<<<< HEAD
                   href="https://www.instagram.com/wander__bihar"
-=======
-                  href="https://www.instagram.com/wander_bihar26"
->>>>>>> b07f2e89b9b901a8eb4af90b91e47546a0dc48f0
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Instagram"
