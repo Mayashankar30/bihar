@@ -8,6 +8,7 @@ import {
   MessageCircle,
   Phone,
 } from "lucide-react";
+import { Analytics } from "@vercel/analytics/react";
 import { gsap, useGSAP } from "./lib/gsap.js";
 import Navbar from "./components/Navbar.jsx";
 import AnnouncementRibbon from "./components/AnnouncementRibbon.jsx";
@@ -783,6 +784,7 @@ export default function App() {
         <MessageCircle size={25} />
       </a>
       <TourDialog tour={selectedTour} onClose={() => setSelectedTour(null)} />
+      <Analytics />
     </div>
   );
 }
