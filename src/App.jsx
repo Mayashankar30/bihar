@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { gsap, useGSAP } from "./lib/gsap.js";
 import Navbar from "./components/Navbar.jsx";
+import AnnouncementRibbon from "./components/AnnouncementRibbon.jsx";
 import TourCard from "./components/TourCard.jsx";
 import TourDialog from "./components/TourDialog.jsx";
 import { useTours } from "./hooks/useTours.js";
@@ -18,6 +19,11 @@ import { businessWhatsAppNumber } from "./lib/config.js";
 import { sampleTours } from "./data/sampleTours.js";
 
 const categories = ["All trips", "Heritage", "Spiritual", "Nature"];
+const contactPhoneNumbers = [
+  { display: "+91 70047 19341", telephone: "+917004719341" },
+  { display: "+91 70500 54006", telephone: "+917050054006" },
+  { display: "+91 79832 90465", telephone: "+917983290465" },
+];
 const heroImages = [
   {
     src: sampleTours[0].images[0],
@@ -318,6 +324,7 @@ export default function App() {
       className="relative isolate min-h-screen overflow-hidden bg-mist text-ink"
     >
       <Navbar onExplore={goToTrips} />
+      <AnnouncementRibbon />
       <main>
         <section ref={heroRef} className="adventure-hero">
           <div className="adventure-hero-inner">
@@ -614,13 +621,17 @@ export default function App() {
           <article className="contact-card">
             <div className="contact-card-title">
               <span className="contact-icon"><Headset size={25} /></span>
-              <h3>Give us a call</h3>
+              <h3>Reach Out</h3>
             </div>
             <h4>Trip enquiries</h4>
             <p>Talk to our team about package details, travel dates, and availability.</p>
-            <a className="contact-text-link" href={`tel:+${businessWhatsAppNumber}`}>
-              +{businessWhatsAppNumber}
-            </a>
+            <div className="grid justify-items-start gap-2">
+              {contactPhoneNumbers.map(({ display, telephone }) => (
+                <a className="contact-text-link" href={`tel:${telephone}`} key={telephone}>
+                  {display}
+                </a>
+              ))}
+            </div>
             <h4 className="contact-subheading">Custom &amp; group trips</h4> 
             <a
               className="contact-text-link"
@@ -688,7 +699,11 @@ export default function App() {
                   <MessageCircle size={17} />
                 </a>
                 <a
+<<<<<<< HEAD
+                  href="https://www.instagram.com/wander__bihar"
+=======
                   href="https://www.instagram.com/wander_bihar26"
+>>>>>>> b07f2e89b9b901a8eb4af90b91e47546a0dc48f0
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Instagram"
@@ -734,10 +749,12 @@ export default function App() {
                 <MapPin size={19} />
                 <p>Local journeys, across Bihar, India.</p>
               </div>
-              <a className="footer-contact-card" href={`tel:+${businessWhatsAppNumber}`}>
-                <Phone size={19} />
-                <p>+{businessWhatsAppNumber}<span>Call our trip team</span></p>
-              </a>
+              {contactPhoneNumbers.map(({ display, telephone }) => (
+                <a className="footer-contact-card" href={`tel:${telephone}`} key={telephone}>
+                  <Phone size={19} />
+                  <p>{display}<span>Call our trip team</span></p>
+                </a>
+              ))}
               <a
                 className="footer-contact-card"
                 href={`https://wa.me/${businessWhatsAppNumber}?text=${encodeURIComponent("Hi, I have a question about travelling in Bihar.")}`}
