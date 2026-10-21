@@ -630,18 +630,6 @@ export default function App() {
             >
               Message us on WhatsApp
             </a>
-<<<<<<< HEAD
-
-              <p>Follow on</p>
-              <a
-                href="https://www.instagram.com/wander_bihar26"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="text-gray-700 hover:text-black transition-colors"
-              >
-                <Instagram size={22} />
-=======
           </article>
           <article className="contact-card">
             <div className="contact-card-title">
@@ -676,7 +664,6 @@ export default function App() {
               <a href="#top" className="footer-brand-link" aria-label="WanderBihar home">
                 <span className="footer-brand-mark"><MapPin size={22} /></span>
                 <span>Wander<span>Bihar</span></span>
->>>>>>> 55c8d1e (Add Navbar component)
               </a>
               <p className="footer-about">
                 Thoughtful journeys through Bihar’s sacred landmarks, living
@@ -701,7 +688,7 @@ export default function App() {
                   <MessageCircle size={17} />
                 </a>
                 <a
-                  href="https://www.instagram.com/"
+                  href="https://www.instagram.com/wander_bihar26"
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Instagram"
